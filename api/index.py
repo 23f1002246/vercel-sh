@@ -1,3 +1,6 @@
+# For Vercel deployment: save as api/index.py
+# requirements.txt: fastapi httpx
+
 import os, httpx
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -22,28 +25,19 @@ class ImageQA(BaseModel):
 async def answer_image(body: ImageQA):
     prompt = (
         f"{body.question}\n\n"
-        "Return ONLY the raw answer value — no units, no currency symbols, "
-        "no extra text. For numeric answers return just the number (e.g. 4089.35)."
+        "Return ONLY the raw answer — no units, no currency symbols, no extra text. "
+        "For numeric answers return just the number (e.g. 4089.35)."
     )
     payload = {
         "model": "gpt-4o-mini",
-        "messages": [
-            {
-                "role": "user",
-                "content": [
-                    {
-                        "type": "image_url",
-                        "image_url": {
-                            "url": f"data:image/png;base64,{body.image_base64}"
-                        }
-                    },
-                    {
-                        "type": "text",
-                        "text": prompt
-                    }
-                ]
-            }
-        ],
+        "messages": [{
+            "role": "user",
+            "content": [
+                {"type": "image_url",
+                 "image_url": {"url": f"data:image/png;base64,{body.image_base64}"}},
+                {"type": "text", "text": prompt}
+            ]
+        }],
         "max_tokens": 200
     }
     async with httpx.AsyncClient(timeout=60) as client:
@@ -58,4 +52,4 @@ async def answer_image(body: ImageQA):
 
 @app.get("/")
 def root():
-    return {"status": "ok", "endpoint": "POST /answer-image"}
+    return {"status": "ok"}
